@@ -1,0 +1,18 @@
+version: '2.10.2'
+services:
+  logstash:
+    image: logstash:8.1.3
+    container_name: logstash
+    restart: always
+    volumes:
+      # - /run/desktop/mnt/host/d/logstash/input.conf:/etc/logstash/input.conf
+      # - /run/desktop/mnt/host/d/logstash/filter.conf:/etc/logstash/filter.conf
+      # - /run/desktop/mnt/host/d/logstash/output.conf:/etc/logstash/output.conf
+      - /run/desktop/mnt/host/d/logstash/logstash.conf:/etc/logstash/logstash.conf
+    ports:
+     - 5044:5044
+    logging:
+      driver: "json-file"
+      options:
+          max-size: 10m
+          max-file: "5"

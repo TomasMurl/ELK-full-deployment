@@ -1,0 +1,35 @@
+version: '2.10.2'
+services:
+  # # # Kibana
+
+  kibana:
+    # depends_on:
+    #   - elasticsearch
+    image: kibana:8.1.3
+    container_name: kibana
+    restart: always
+    #
+    volumes:
+      - /run/desktop/mnt/host/d/kibana/tmp/:/tmp/host:rw     
+      - /run/desktop/mnt/host/d/kibana/log/:/var/log/
+      - /run/desktop/mnt/host/d/kibana/data/:/tmp/data:rw    
+      - /run/desktop/mnt/host/d/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    #
+    ports:
+     - 5601:5601
+    #
+    environment:
+      - ELASTICSEARCH_HOSTS=http://192.168.56.1:9200
+    #
+    #networks:
+    #  - elastic
+    #
+    logging:
+      driver: "json-file"
+      options:
+          max-size: 10m
+          max-file: "5"
+
+# networks:
+#   elastic:
+#     driver: bridge

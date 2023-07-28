@@ -1,0 +1,99 @@
+version: '2.10.2'
+services:
+  # # # Elasticsearch
+  elasticsearch:
+    image: elasticsearch:8.1.3
+    container_name: elasticsearch
+    restart: always
+    #
+    volumes:
+      - /run/desktop/mnt/host/d/elasticsearch/data:/usr/share/elasticsearch/data
+      - /run/desktop/mnt/host/d/elasticsearch/log/:/usr/share/elasticsearch/data/var/log 
+      - /run/desktop/mnt/host/d/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /run/desktop/mnt/host/d/elasticsearch/elasticsearch.key:/usr/share/elasticsearch/config/elasticsearch.key:rw
+      - /run/desktop/mnt/host/d/elasticsearch/elasticsearch.crt:/usr/share/elasticsearch/config/elasticsearch.crt:rw
+      - /run/desktop/mnt/host/d/elasticsearch/ca.crt:/usr/share/elasticsearch/config/ca.crt:rw
+      - /run/desktop/mnt/host/d/elasticsearch/hosts:/etc/hosts
+    #
+    # command: sh -c "chmod 444 /usr/share/elasticsearch/certs/*"
+    ports:
+      - 9200:9200
+      - 9300:9300
+    #
+    environment:
+      # - cluster.name=es-docker-cluster
+      # - network.host=0.0.0.0
+      # - xpack.security.enabled=false
+      - discovery.type=single-node
+    #
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    #
+    logging:
+      driver: "json-file"
+      options:
+          max-size: 10m
+          max-file: "5"
+    #
+    #networks:
+    #  - elastic
+    #
+
+  # # # Kibana
+
+  kibana:
+    depends_on:
+      - elasticsearch
+    image: kibana:8.1.3
+    container_name: kibana
+    restart: always
+    #
+    volumes:
+      - /run/desktop/mnt/host/d/kibana/tmp/:/tmp/host:rw     
+      - /run/desktop/mnt/host/d/kibana/log/:/var/log/
+      - /run/desktop/mnt/host/d/kibana/data/:/tmp/data:rw    
+      - /run/desktop/mnt/host/d/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - /run/desktop/mnt/host/d/kibana/kibana.key:/usr/share/kibana/config/kibana.key:rw
+      - /run/desktop/mnt/host/d/kibana/kibana.crt:/usr/share/kibana/config/kibana.crt:rw
+      - /run/desktop/mnt/host/d/elasticsearch/elasticsearch.crt/:/usr/share/kibana/config/elasticsearch.crt:rw
+      - /run/desktop/mnt/host/d/elasticsearch/hosts:/etc/hosts
+      - /run/desktop/mnt/host/d/elasticsearch/ca.crt:/usr/share/kibana/config/ca.crt:rw
+    # command: sh -c "chmod 444 /usr/share/kibana/certs/*"
+    ports:
+     - 5601:5601
+    #
+    # environment:
+    #   - ELASTICSEARCH_HOSTS=http://192.168.56.1:9200
+    #
+    #networks:
+    #  - elastic
+    #
+    logging:
+      driver: "json-file"
+      options:
+          max-size: 10m
+          max-file: "5"
+
+  logstash:
+    depends_on:
+      - elasticsearch
+    image: logstash:8.1.3
+    container_name: logstash
+    restart: always
+    volumes:
+      - /run/desktop/mnt/host/d/logstash/logstash.conf:/etc/logstash/logstash.conf
+      - /run/desktop/mnt/host/d/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - /run/desktop/mnt/host/d/logstash/logstash.pkcs8.key:/etc/logstash/config/logstash.pkcs8.key:rw
+      - /run/desktop/mnt/host/d/logstash/logstash.crt:/etc/logstash/config/logstash.crt:rw
+      - /run/desktop/mnt/host/d/elasticsearch/ca.crt:/etc/logstash/config/ca.crt:rw
+      - /run/desktop/mnt/host/d/elasticsearch/hosts:/etc/hosts
+    command: sh -c "./bin/logstash -f /etc/logstash/logstash.conf"
+    ports:
+      - 5044:5044
+    logging:
+      driver: "json-file"
+      options:
+          max-size: 10m
+          max-file: "5"
