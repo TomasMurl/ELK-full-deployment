@@ -1,0 +1,9 @@
+services:
+  ml-container:
+    build: .
+    ports:
+      - 80:80
+    volumes:
+      - /run/desktop/mnt/host/c/Users/Tomas/Desktop/models_host/models:/home/models
+    environment:
+      - model_path=/home/models/distilbert-base-cased-finetuned-conll03-english
